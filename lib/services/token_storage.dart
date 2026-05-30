@@ -5,7 +5,9 @@ class TokenStorage {
   static const _refreshTokenKey = 'refresh_token';
   static const _serverAddressKey = 'server_address';
 
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  static const FlutterSecureStorage _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
   Future<String?> getAccessToken() async {
     return await _storage.read(key: _accessTokenKey);

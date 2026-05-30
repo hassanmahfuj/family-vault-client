@@ -11,11 +11,13 @@ class AuthProvider extends ChangeNotifier {
   bool _isAuthenticated = false;
   String? _error;
   String? _serverAddress;
+  String? _username;
 
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
   String? get error => _error;
   String? get serverAddress => _serverAddress;
+  String? get username => _username;
 
   Future<void> loadServerAddress() async {
     _serverAddress = await _tokenStorage.getServerAddress();
@@ -58,6 +60,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       AuthResponse response = await _apiService.login(username, password);
       await _tokenStorage.saveTokens(response.accessToken, response.refreshToken);
+      _username = username;
       _isAuthenticated = true;
       _isLoading = false;
       notifyListeners();

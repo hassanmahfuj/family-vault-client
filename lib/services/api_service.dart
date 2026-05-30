@@ -7,12 +7,16 @@ import '../services/token_storage.dart';
 class ApiService {
   final TokenStorage _tokenStorage = TokenStorage();
 
-  Future<String?> _getBaseUrl() async {
+  Future<String?> getBaseUrl() async {
     return await _tokenStorage.getServerAddress();
   }
 
+  Future<String?> getAccessToken() async {
+    return await _tokenStorage.getAccessToken();
+  }
+
   Future<AuthResponse> login(String username, String password) async {
-    final baseUrl = await _getBaseUrl();
+    final baseUrl = await getBaseUrl();
     if (baseUrl == null || baseUrl.isEmpty) {
       throw Exception('Server address not configured');
     }
@@ -44,7 +48,7 @@ class ApiService {
   }
 
   Future<AuthResponse> refreshToken() async {
-    final baseUrl = await _getBaseUrl();
+    final baseUrl = await getBaseUrl();
     if (baseUrl == null || baseUrl.isEmpty) {
       throw Exception('Server address not configured');
     }
@@ -90,7 +94,7 @@ class ApiService {
   }
 
   Future<http.Response> _sendRequest(String endpoint, String token, {String method = 'GET', Map<String, dynamic>? body}) async {
-    final baseUrl = await _getBaseUrl();
+    final baseUrl = await getBaseUrl();
     final uri = Uri.parse('$baseUrl$endpoint');
     final headers = {
       'Content-Type': 'application/json',

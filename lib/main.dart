@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'app_theme.dart';
 import 'providers/auth_provider.dart';
-import 'screens/home_screen.dart';
+import 'providers/file_provider.dart';
+import 'providers/share_provider.dart';
+import 'providers/upload_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   runApp(const FamilyVaultApp());
@@ -13,15 +17,17 @@ class FamilyVaultApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthProvider()..checkAuth(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()..checkAuth()),
+        ChangeNotifierProvider(create: (_) => FileProvider()),
+        ChangeNotifierProvider(create: (_) => ShareProvider()),
+        ChangeNotifierProvider(create: (_) => UploadProvider()),
+      ],
       child: MaterialApp(
         title: 'FamilyVault',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.darkTheme,
         home: const AuthWrapper(),
       ),
     );
@@ -36,7 +42,7 @@ class AuthWrapper extends StatelessWidget {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
         if (authProvider.isAuthenticated) {
-          return const HomeScreen();
+          return const MainScreen();
         }
         return const LoginScreen();
       },
