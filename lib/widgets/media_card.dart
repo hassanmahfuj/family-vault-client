@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../models/file_item.dart';
@@ -6,12 +7,14 @@ class MediaCard extends StatelessWidget {
   final FileItem file;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final String? thumbnailUrl;
 
   const MediaCard({
     super.key,
     required this.file,
     required this.onTap,
     this.onLongPress,
+    this.thumbnailUrl,
   });
 
   @override
@@ -25,33 +28,14 @@ class MediaCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(color: AppColors.border),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: Stack(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceElevated,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(AppRadius.lg),
-                      ),
-                    ),
-                    child: Center(
-                      child: file.isVideo
-                          ? const Icon(
-                              Icons.play_circle_outline,
-                              color: AppColors.secondary,
-                              size: 40,
-                            )
-                          : const Icon(
-                              Icons.image_outlined,
-                              color: AppColors.textMuted,
-                              size: 40,
-                            ),
-                    ),
-                  ),
+                  _buildPreview(),
                   if (file.isVideo)
                     Positioned(
                       bottom: 6,
@@ -99,6 +83,53 @@ class MediaCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPreview() {
+    if (thumbnailUrl != null && !file.isVideo) {
+      return CachedNetworkImage(
+        imageUrl: thumbnailUrl!,
+        cacheKey: 'thumb:${file.path}',
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        fadeInDuration: const Duration(milliseconds: 150),
+        placeholder: (_, __) => Container(
+          color: AppColors.surfaceElevated,
+          child: const Center(
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ),
+        errorWidget: (_, __, ___) => _iconFallback(),
+      );
+    }
+    return _iconFallback();
+  }
+
+  Widget _iconFallback() {
+    return Container(
+      color: AppColors.surfaceElevated,
+      child: Center(
+        child: file.isVideo
+            ? const Icon(
+                Icons.play_circle_outline,
+                color: AppColors.secondary,
+                size: 40,
+              )
+            : const Icon(
+                Icons.image_outlined,
+                color: AppColors.textMuted,
+                size: 40,
+              ),
       ),
     );
   }

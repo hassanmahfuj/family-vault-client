@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/auth_response.dart';
 import '../services/token_storage.dart';
+import 'media_url.dart';
 
 class ApiService {
   final TokenStorage _tokenStorage = TokenStorage();
@@ -13,6 +14,15 @@ class ApiService {
 
   Future<String?> getAccessToken() async {
     return await _tokenStorage.getAccessToken();
+  }
+
+  Future<MediaUrl?> resolveMediaUrl() async {
+    final baseUrl = await _tokenStorage.getServerAddress();
+    final token = await _tokenStorage.getAccessToken();
+    if (baseUrl == null || baseUrl.isEmpty || token == null || token.isEmpty) {
+      return null;
+    }
+    return MediaUrl(baseUrl: baseUrl, token: token);
   }
 
   Future<AuthResponse> login(String username, String password) async {

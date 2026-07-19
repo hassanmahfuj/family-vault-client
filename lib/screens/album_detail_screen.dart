@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../app_theme.dart';
 import '../models/file_item.dart';
 import '../providers/file_provider.dart';
+import '../services/api_service.dart';
+import '../services/media_url.dart';
 import '../widgets/album_card.dart';
 import '../widgets/media_card.dart';
 import '../widgets/loading_grid.dart';
@@ -31,12 +33,22 @@ class AlbumDetailScreen extends StatefulWidget {
 }
 
 class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
+  MediaUrl? _mediaUrl;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FileProvider>().loadContents(widget.albumPath);
+      ApiService().resolveMediaUrl().then((u) {
+        if (mounted) setState(() => _mediaUrl = u);
+      });
     });
+  }
+
+  String? _thumbUrlFor(String albumPath, FileItem file) {
+    if (file.isVideo || _mediaUrl == null) return null;
+    return _mediaUrl!.ownThumb(albumPath, file.name);
   }
 
   @override
@@ -167,6 +179,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                   final file = provider.mediaFiles[index];
                   return MediaCard(
                     file: file,
+                    thumbnailUrl: _thumbUrlFor(provider.currentPath, file),
                     onTap: () => _openMedia(provider, file),
                     onLongPress: () => _showFileOptions(provider, file),
                   );
@@ -214,6 +227,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             file: file,
             albumPath: provider.currentPath,
             allFiles: provider.mediaFiles,
+            mediaUrl: _mediaUrl,
           ),
         ),
       );

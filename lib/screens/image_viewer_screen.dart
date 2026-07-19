@@ -1,18 +1,21 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
 import '../models/file_item.dart';
-import '../services/api_service.dart';
+import '../services/media_url.dart';
 
 class ImageViewerScreen extends StatefulWidget {
   final FileItem file;
   final String albumPath;
   final List<FileItem> allFiles;
+  final MediaUrl? mediaUrl;
 
   const ImageViewerScreen({
     super.key,
     required this.file,
     required this.albumPath,
     required this.allFiles,
+    this.mediaUrl,
   });
 
   @override
@@ -22,7 +25,6 @@ class ImageViewerScreen extends StatefulWidget {
 class _ImageViewerScreenState extends State<ImageViewerScreen> {
   late PageController _pageController;
   late int _currentIndex;
-  final ApiService _apiService = ApiService();
   bool _showBars = true;
 
   List<FileItem> get _images =>
@@ -92,37 +94,31 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
     );
   }
 
-  String _encodePath(String path) {
-    return path.split('/').map(Uri.encodeComponent).join('/');
-  }
-
   Widget _buildImage(FileItem file) {
-    final encodedAlbum = _encodePath(widget.albumPath);
-    final endpoint = encodedAlbum.isEmpty
-        ? '/api/files/my/${Uri.encodeComponent(file.name)}'
-        : '/api/files/my/$encodedAlbum/${Uri.encodeComponent(file.name)}';
-
+    if (widget.mediaUrl == null) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+    final imageUrl = widget.mediaUrl!.ownImage(widget.albumPath, file.name);
     return Center(
-      child: FutureBuilder(
-        future: _apiService.authenticatedRequest(endpoint),
-        builder: (context, AsyncSnapshot<dynamic> snap) {
-          if (!snap.hasData) {
-            return const CircularProgressIndicator(color: AppColors.primary);
-          }
-          if (snap.hasError) {
-            return const Icon(Icons.error_outline, color: AppColors.error, size: 48);
-          }
-          final response = snap.data;
-          return InteractiveViewer(
-            minScale: 0.5,
-            maxScale: 4.0,
-            child: Image.memory(
-              response.bodyBytes,
-              fit: BoxFit.contain,
-              gaplessPlayback: true,
-            ),
-          );
-        },
+      child: InteractiveViewer(
+        minScale: 0.5,
+        maxScale: 4.0,
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          cacheKey: 'image:${file.path}',
+          fit: BoxFit.contain,
+          fadeInDuration: const Duration(milliseconds: 100),
+          placeholder: (_, __) => const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+          errorWidget: (_, __, ___) => const Icon(
+            Icons.error_outline,
+            color: AppColors.error,
+            size: 48,
+          ),
+        ),
       ),
     );
   }
