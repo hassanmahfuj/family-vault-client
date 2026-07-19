@@ -27,7 +27,7 @@ class FamilyVaultApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UploadProvider()),
       ],
       child: MaterialApp(
-        title: 'FamilyVault',
+        title: 'Family Vault',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         home: const AuthWrapper(),
@@ -108,13 +108,13 @@ class _SplashScreen extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.cloud_outlined,
-                size: 36,
+                size: 44,
                 color: Colors.white,
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              'FamilyVault',
+              'Family Vault',
               style: Theme.of(context).textTheme.displayMedium,
             ),
             const SizedBox(height: 24),

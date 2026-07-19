@@ -178,7 +178,7 @@ class _PinScreenState extends State<PinScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'FamilyVault',
+                'Family Vault',
                 style: Theme.of(context).textTheme.displayMedium,
               ),
               const SizedBox(height: 8),

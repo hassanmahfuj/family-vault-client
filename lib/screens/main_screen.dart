@@ -52,7 +52,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FamilyVault'),
+        title: const Text('Family Vault'),
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {

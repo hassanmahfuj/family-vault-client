@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'FamilyVault',
+                      'Family Vault',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.displayMedium,
                     ),
