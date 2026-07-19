@@ -4,6 +4,7 @@ class TokenStorage {
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
   static const _serverAddressKey = 'server_address';
+  static const _usernameKey = 'username';
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -43,5 +44,13 @@ class TokenStorage {
   Future<bool> hasServerAddress() async {
     final address = await _storage.read(key: _serverAddressKey);
     return address != null && address.isNotEmpty;
+  }
+
+  Future<void> saveUsername(String username) async {
+    await _storage.write(key: _usernameKey, value: username);
+  }
+
+  Future<String?> getUsername() async {
+    return await _storage.read(key: _usernameKey);
   }
 }

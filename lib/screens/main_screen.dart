@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../services/pin_storage.dart';
+import '../widgets/set_pin_dialog.dart';
 import '../screens/my_files_screen.dart';
 import '../screens/shared_with_me_screen.dart';
 import '../screens/my_shares_screen.dart';
@@ -15,6 +17,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  bool _hasPin = false;
 
   final List<Widget> _screens = const [
     MyFilesScreen(),
@@ -23,10 +26,30 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final username = authProvider.username ?? 'U';
+  void initState() {
+    super.initState();
+    _checkPin();
+  }
 
+  Future<void> _checkPin() async {
+    final hasPin = await PinStorage().hasPin();
+    if (mounted) {
+      setState(() => _hasPin = hasPin);
+    }
+  }
+
+  Future<void> _showSetPinDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => SetPinDialog(isChange: _hasPin),
+    );
+    if (result == true) {
+      _checkPin();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('FamilyVault'),
@@ -35,6 +58,8 @@ class _MainScreenState extends State<MainScreen> {
             onSelected: (value) {
               if (value == 'logout') {
                 context.read<AuthProvider>().logout();
+              } else if (value == 'pin') {
+                _showSetPinDialog();
               }
             },
             offset: const Offset(0, 50),
@@ -42,6 +67,19 @@ class _MainScreenState extends State<MainScreen> {
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'pin',
+                child: Row(
+                  children: [
+                    Icon(
+                      _hasPin ? Icons.lock : Icons.lock_outline,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(_hasPin ? 'Change PIN' : 'Set PIN'),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'logout',
                 child: Row(
@@ -58,13 +96,10 @@ class _MainScreenState extends State<MainScreen> {
               child: CircleAvatar(
                 backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                 radius: 16,
-                child: Text(
-                  username[0].toUpperCase(),
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
+                child: const Icon(
+                  Icons.person,
+                  color: AppColors.primary,
+                  size: 18,
                 ),
               ),
             ),

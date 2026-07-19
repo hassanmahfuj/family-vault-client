@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/auth_response.dart';
 import '../services/api_service.dart';
+import '../services/pin_storage.dart';
 import '../services/token_storage.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -9,12 +10,14 @@ class AuthProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   bool _isAuthenticated = false;
+  bool _isCheckingAuth = true;
   String? _error;
   String? _serverAddress;
   String? _username;
 
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
+  bool get isCheckingAuth => _isCheckingAuth;
   String? get error => _error;
   String? get serverAddress => _serverAddress;
   String? get username => _username;
@@ -32,6 +35,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> checkAuth() async {
     _serverAddress = await _tokenStorage.getServerAddress();
+    _username = await _tokenStorage.getUsername();
     final hasTokens = await _tokenStorage.hasTokens();
     if (hasTokens && _serverAddress != null && _serverAddress!.isNotEmpty) {
       try {
@@ -43,6 +47,7 @@ class AuthProvider extends ChangeNotifier {
     } else {
       _isAuthenticated = false;
     }
+    _isCheckingAuth = false;
     notifyListeners();
   }
 
@@ -60,6 +65,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       AuthResponse response = await _apiService.login(username, password);
       await _tokenStorage.saveTokens(response.accessToken, response.refreshToken);
+      await _tokenStorage.saveUsername(username);
       _username = username;
       _isAuthenticated = true;
       _isLoading = false;
@@ -75,6 +81,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     await _tokenStorage.clearTokens();
+    await PinStorage().clearPin();
     _isAuthenticated = false;
     notifyListeners();
   }
